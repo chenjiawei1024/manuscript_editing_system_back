@@ -14,4 +14,19 @@ export class AppController {
   creationQuestion(@Body() resq: { question: string }) {
     return askAIQuestion(resq.question);
   }
+
+  @Post('creation/title')
+  createTitlePrompt(@Body() resq: { question: string }) {
+    return askAIQuestion(resq.question, 'title');
+  }
+
+  @Post('creation/word')
+  createWordReplacement(@Body() resq: { question: string }) {
+    return askAIQuestion(resq.question, 'word');
+  }
+
+  @Post('creation/typo')
+  createTypoCorrection(@Body() resq: { question: string }) {
+    return askAIQuestion(resq.question, 'typo');
+  }
 }
