@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  Request,
 } from '@nestjs/common';
 import { FileService } from './file.service';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
+import { ReqUserDto } from '../user/dto/req-user.dto';
 
 @Controller('file')
 export class FileController {
@@ -21,29 +24,30 @@ export class FileController {
   }
 
   @Get('all')
-  findAllSortedByLastAccessedAt() {
-    return this.fileService.findAllSortedByLastAccessedAt();
+  findAllSortedByLastAccessedAt(@Request() req: ReqUserDto) {
+    return this.fileService.findAllSortedByLastAccessedAt(+req.user.user_id);
   }
 
   @Get('favor')
-  findAllFavorite() {
-    return this.fileService.findAllFavorite();
+  findAllFavorite(@Request() req: ReqUserDto) {
+    return this.fileService.findAllFavorite(+req.user.user_id);
   }
 
-  @Get(':id')
-  findAll(@Param('id') id: string) {
-    return this.fileService.findAll(+id);
+  @Get()
+  findAll(@Query() params: { owner: number; parent?: number }) {
+    const { owner, parent } = params;
+    return this.fileService.findAll(owner, parent);
   }
 
   @Get('search/:name')
-  findByName(@Param('name') name: string) {
-    return this.fileService.findByName(name);
+  findByName(@Param('name') name: string, @Request() req: ReqUserDto) {
+    return this.fileService.findByName(name, +req.user.user_id);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.fileService.findOne(id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.fileService.findById(+id);
+  }
 
   @Patch(':id/favor')
   async toggleFavorite(@Param('id') id: number) {

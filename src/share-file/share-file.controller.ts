@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ShareFileService } from './share-file.service';
 import { CreateShareFileDto } from './dto/create-share-file.dto';
 import { UpdateShareFileDto } from './dto/update-share-file.dto';
 
-@Controller('share-file')
+@Controller('sfile')
 export class ShareFileController {
   constructor(private readonly shareFileService: ShareFileService) {}
 
@@ -18,12 +26,15 @@ export class ShareFileController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.shareFileService.findOne(+id);
+  findFilesByReceiverId(@Param('id') id: string) {
+    return this.shareFileService.findFilesByReceiverId(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateShareFileDto: UpdateShareFileDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateShareFileDto: UpdateShareFileDto,
+  ) {
     return this.shareFileService.update(+id, updateShareFileDto);
   }
 

@@ -31,7 +31,7 @@ export class File {
   @Column({ default: false })
   is_favorite: boolean;
 
-  @Column({ default: '<p>请在此处进行创作~~</p>' })
+  @Column({ default: '<p>请在此处进行创作~~</p>', length: 5000 })
   content: string;
 
   @ManyToOne(() => User, (user) => user.files)

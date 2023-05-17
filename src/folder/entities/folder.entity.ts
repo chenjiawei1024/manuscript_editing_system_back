@@ -26,9 +26,6 @@ export class Folder {
   @UpdateDateColumn()
   last_accessed_at: Date;
 
-  @Column({ default: false })
-  is_favorite: boolean;
-
   @ManyToOne(() => User, (user) => user.folders)
   owner: User;
 

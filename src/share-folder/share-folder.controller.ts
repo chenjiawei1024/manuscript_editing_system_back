@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ShareFolderService } from './share-folder.service';
 import { CreateShareFolderDto } from './dto/create-share-folder.dto';
 import { UpdateShareFolderDto } from './dto/update-share-folder.dto';
 
-@Controller('share-folder')
+@Controller('sfolder')
 export class ShareFolderController {
   constructor(private readonly shareFolderService: ShareFolderService) {}
 
@@ -23,7 +31,10 @@ export class ShareFolderController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateShareFolderDto: UpdateShareFolderDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateShareFolderDto: UpdateShareFolderDto,
+  ) {
     return this.shareFolderService.update(+id, updateShareFolderDto);
   }
 

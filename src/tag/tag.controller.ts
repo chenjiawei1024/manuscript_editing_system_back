@@ -17,7 +17,7 @@ export class TagController {
 
   @Post()
   create(@Body() createTagDto: CreateTagDto) {
-    return this.tagService.create(createTagDto);
+    return this.tagService.create(createTagDto.tag_name);
   }
 
   @Get()
@@ -32,11 +32,12 @@ export class TagController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagService.update(+id, updateTagDto);
+    return this.tagService.associateTagWithFile(updateTagDto.tag_name, +id);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.tagService.remove(+id);
+    console.log(id);
+    return this.tagService.removeTagFromFiles(+id);
   }
 }

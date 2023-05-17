@@ -19,14 +19,18 @@ export class FolderService {
     return await this.folderRepository.save(folder);
   }
 
-  async findAll(parentId?: number): Promise<Folder[]> {
+  async findAll(owner: number, parentId?: number): Promise<Folder[]> {
     const queryBuilder = this.folderRepository.createQueryBuilder('folder');
     if (parentId) {
-      queryBuilder.andWhere('folder.parent.folder_id = :parentId', {
-        parentId,
-      });
+      queryBuilder
+        .where('folder.parent.folder_id = :parentId', {
+          parentId,
+        })
+        .andWhere('folder.owner.user_id = :owner', { owner });
     } else {
-      queryBuilder.andWhere('folder.parent.folder_id = -1');
+      queryBuilder
+        .where('folder.parent.folder_id = -1')
+        .andWhere('folder.owner.user_id = :owner', { owner });
     }
     const folders = await queryBuilder.getMany();
     return folders;
@@ -71,10 +75,12 @@ export class FolderService {
   //   return folders;
   // }
 
-  async findByName(name: string) {
-    const folders = await this.folderRepository.find({
-      where: { folder_name: Like(`%${name}%`) },
-    });
+  async findByName(name: string, owner: number) {
+    const folders = await this.folderRepository
+      .createQueryBuilder('folder')
+      .where('folder.folder_name LIKE :name', { name: `%${name}%` })
+      .andWhere('folder.owner.user_id = :owner', { owner })
+      .getMany();
     return folders;
   }
 

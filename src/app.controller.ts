@@ -25,8 +25,8 @@ export class AppController {
     return askAIQuestion(resq.question, 'word');
   }
 
-  @Post('creation/typo')
-  createTypoCorrection(@Body() resq: { question: string }) {
-    return askAIQuestion(resq.question, 'typo');
+  @Post('creation/classify')
+  createTagClassify(@Body() resq: { question: string }) {
+    return askAIQuestion(resq.question, 'classify');
   }
 }

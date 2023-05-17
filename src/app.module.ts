@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -15,6 +20,7 @@ import { File } from './file/entities/file.entity';
 import { Tag } from './tag/entities/tag.entity';
 import { ShareFolder } from './share-folder/entities/share-folder.entity';
 import { ShareFile } from './share-file/entities/share-file.entity';
+import { JwtMiddleware } from './utils/jwt.middleware';
 
 @Module({
   imports: [
@@ -40,4 +46,16 @@ import { ShareFile } from './share-file/entities/share-file.entity';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtMiddleware)
+      .exclude(
+        // 登录
+        { path: '/user/login', method: RequestMethod.POST },
+        // 注册
+        { path: '/user', method: RequestMethod.POST },
+      )
+      .forRoutes('*');
+  }
+}

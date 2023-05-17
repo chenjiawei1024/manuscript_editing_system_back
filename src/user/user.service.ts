@@ -66,8 +66,6 @@ export class UserService {
     const user = await this.user.findOne({
       where: { name: username },
     });
-    console.log(user);
-    console.log(user.user_id);
 
     if (!user) {
       throw new NotFoundException(`User with username ${username} not found`);
@@ -78,7 +76,7 @@ export class UserService {
       throw new NotFoundException(`Invalid password`);
     }
 
-    const payload = { username: user.name, sub: user.user_id };
+    const payload = { name: user.name, user_id: user.user_id };
     const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
       expiresIn: '1h',
     });

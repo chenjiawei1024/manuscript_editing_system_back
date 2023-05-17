@@ -3,7 +3,7 @@ import * as tunnel from 'tunnel';
 
 export const askAIQuestion = async (
   question: string,
-  type?: 'title' | 'word' | 'typo',
+  type?: 'title' | 'word' | 'classify',
 ) => {
   // 创建openaiAPI
   const configuration = new Configuration({
@@ -25,17 +25,26 @@ export const askAIQuestion = async (
       case 'word':
         prompt = wordReplacementPrompt(question);
         break;
-      case 'typo':
-        prompt = typoCorrectionPrompt(question);
+      case 'classify':
+        prompt = tagClassifyPrompt(question);
         break;
       default:
         prompt = generatePrompt(question);
     }
+    const temperature = 0.7;
+    const max_tokens = 256;
+    const top_p = 1;
+    const frequency_penalty = 1;
+    const presence_penalty = 0;
     const completion = await openai.createCompletion(
       {
         model: 'text-davinci-003',
         prompt,
-        temperature: 0.6,
+        temperature,
+        max_tokens,
+        top_p,
+        frequency_penalty,
+        presence_penalty,
       },
       {
         httpsAgent: tunnel.httpsOverHttp({
@@ -47,9 +56,19 @@ export const askAIQuestion = async (
       },
     );
     console.log(completion.data.choices[0].text);
-    return { result: completion.data.choices[0].text };
+    switch (type) {
+      case 'title':
+        return { result: completion.data.choices[0].text.split('/') };
+      case 'word':
+        return { result: JSON.parse(completion.data.choices[0].text) };
+      case 'classify':
+        return { result: completion.data.choices[0].text.split('、') };
+      default:
+        return { result: completion.data.choices[0].text };
+    }
   } catch (error) {
     // Consider adjusting the error handling logic for your use case
+    console.log(error);
     return { message: 'An error occurred during your request.' };
   }
 };
@@ -59,17 +78,29 @@ const generatePrompt = (question: string) => {
 };
 
 const createTitlePrompt = (content: string) => {
-  return content;
+  const prompt = `请按照格式生成吸引人的文章标题。
+  注意：四个标题字数范围都是十二到十六字! 
+  例：食品检出核酸阳性具有传染性吗？专家这样说!
+  输入:"""文章内容"""
+  输出:xxx：xxx？/xxx？xxx！/xxx，xxx！/xxx，xxx
+  输入:"""${content}"""
+  输出:`;
+  return prompt;
 };
 
 const wordReplacementPrompt = (content: string) => {
-  return content;
+  const prompt = `请按格式修改部分词语短句，润色输入的文章，不需要输出修改后的文章
+  输入: """文章内容"""
+  输出: [{"before": "aa", "after": "bb"}]
+  输入:"""${content}"""
+  输出:...`;
+  return prompt;
 };
 
-const typoCorrectionPrompt = (content: string) => {
+const tagClassifyPrompt = (content: string) => {
   const prompt = `""" 
   ${content}
-  """
-  请通过修改部分词句，润色这篇文章。输出格式为可以被解析的json对象，例: [{before: 'a', after: 'b'}]`;
+   """
+  根据该文章的内容帮我生成几个文章标签,字数要求3到5个字，以顿号分隔：`;
   return prompt;
 };

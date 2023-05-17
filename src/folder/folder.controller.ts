@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
 } from '@nestjs/common';
 import { FolderService } from './folder.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
+import { ReqUserDto } from '../user/dto/req-user.dto';
 
 @Controller('folder')
 export class FolderController {
@@ -21,13 +23,13 @@ export class FolderController {
   }
 
   @Get(':id')
-  findAll(@Param('id') pid: number) {
-    return this.folderService.findAll(pid);
+  findAll(@Param('id') pid: number, @Request() req: ReqUserDto) {
+    return this.folderService.findAll(+req.user.user_id, pid);
   }
 
   @Get('search/:name')
-  findByName(@Param('name') name: string) {
-    return this.folderService.findByName(name);
+  findByName(@Param('name') name: string, @Request() req: ReqUserDto) {
+    return this.folderService.findByName(name, +req.user.user_id);
   }
 
   // @Get(':id')
