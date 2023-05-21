@@ -34,9 +34,9 @@ export class FileController {
   }
 
   @Get()
-  findAll(@Query() params: { owner: number; parent?: number }) {
-    const { owner, parent } = params;
-    return this.fileService.findAll(owner, parent);
+  findAll(@Query() params: { owner: number; parent_id?: number }) {
+    const { owner, parent_id } = params;
+    return this.fileService.findAll(owner, parent_id);
   }
 
   @Get('search/:name')
@@ -62,5 +62,20 @@ export class FileController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.fileService.remove(+id);
+  }
+
+  @Get('lock/:file_id')
+  getFileLockedStatus(@Param('file_id') file_id: number) {
+    return this.fileService.getFileLockedStatus(+file_id);
+  }
+
+  @Patch('lock/:file_id')
+  lockFile(@Param('file_id') file_id: number) {
+    return this.fileService.lockFile(+file_id);
+  }
+
+  @Patch('unlock/:file_id')
+  unlockFile(@Param('file_id') file_id: number) {
+    return this.fileService.unlockFile(+file_id);
   }
 }

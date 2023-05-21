@@ -31,6 +31,12 @@ export class File {
   @Column({ default: false })
   is_favorite: boolean;
 
+  @Column({ default: false })
+  is_locked: boolean;
+
+  @Column({ default: false })
+  is_shared: boolean;
+
   @Column({ default: '<p>请在此处进行创作~~</p>', length: 5000 })
   content: string;
 

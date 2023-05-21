@@ -5,6 +5,7 @@ import { Tag } from '../tag/entities/tag.entity';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 import { File } from './entities/file.entity';
+import { ShareFile } from '../share-file/entities/share-file.entity';
 
 @Injectable()
 export class FileService {
@@ -13,6 +14,8 @@ export class FileService {
     private readonly fileRepository: Repository<File>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(ShareFile)
+    private readonly sharefileRepository: Repository<ShareFile>,
   ) {}
 
   async create(createFileDto: CreateFileDto) {
@@ -31,23 +34,11 @@ export class FileService {
   }
 
   async findAll(owner: number, parentId?: number) {
-    // const files = await this.fileRepository.find({
-    //   relations: ['tags'],
-    // });
-    // const queryBuilder = this.fileRepository.createQueryBuilder('file');
-    // if (parentId) {
-    //   queryBuilder.andWhere('file.parent.folder_id = :parentId', {
-    //     parentId,
-    //   });
-    // } else {
-    //   queryBuilder.andWhere('file.parent.folder_id = -1');
-    // }
-    // const files = await queryBuilder.getMany();
-    // return files;
     const queryBuilder = this.fileRepository
       .createQueryBuilder('file')
       .leftJoinAndSelect('file.tags', 'tag');
 
+    console.log(parentId);
     if (parentId) {
       queryBuilder.andWhere('file.parent.folder_id = :parentId', {
         parentId,
@@ -55,10 +46,25 @@ export class FileService {
     } else {
       queryBuilder
         .andWhere('file.parent.folder_id = -1')
-        .andWhere('file.owner = :owner', { owner });
+        .andWhere('file.owner.user_id = :owner', { owner });
     }
 
     const files = await queryBuilder.getMany();
+
+    for (const file of files) {
+      // const shareFiles = await this.sharefileRepository.find({
+      //   where: {
+      //     file: file,
+      //   },
+      // });
+      const shareFiles = await this.sharefileRepository
+        .createQueryBuilder('sharefile')
+        .leftJoinAndSelect('sharefile.file', 'file')
+        .where('file.file_id = :file_id', { file_id: file.file_id })
+        .getMany();
+
+      file.is_shared = shareFiles.length > 0;
+    }
     return files;
   }
 
@@ -129,5 +135,43 @@ export class FileService {
   async remove(id: number) {
     const folder = await this.findById(id);
     await this.fileRepository.remove(folder);
+  }
+
+  async lockFile(file_id: number): Promise<File> {
+    const file = await this.fileRepository.findOne({ where: { file_id } });
+    if (!file) {
+      throw new Error(`File with ID ${file_id} not found`);
+    }
+
+    if (file.is_locked) {
+      throw new Error(`File with ID ${file_id} is already locked`);
+    }
+
+    file.is_locked = true;
+    return this.fileRepository.save(file);
+  }
+
+  async unlockFile(file_id: number): Promise<File> {
+    const file = await this.fileRepository.findOne({ where: { file_id } });
+    if (!file) {
+      throw new Error(`File with ID ${file_id} not found`);
+    }
+
+    if (!file.is_locked) {
+      throw new Error(`File with ID ${file_id} is not locked`);
+    }
+
+    file.is_locked = false;
+    return this.fileRepository.save(file);
+  }
+
+  async getFileLockedStatus(file_id: number): Promise<boolean> {
+    const file = await this.fileRepository.findOne({ where: { file_id } });
+
+    if (!file) {
+      throw new Error(`File with ID ${file_id} not found`);
+    }
+
+    return file.is_locked;
   }
 }
