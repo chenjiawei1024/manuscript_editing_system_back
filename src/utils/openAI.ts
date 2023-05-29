@@ -80,20 +80,29 @@ const generatePrompt = (question: string) => {
 };
 
 const createTitlePrompt = (content: string) => {
-  const prompt = `请按照格式生成吸引人的文章标题。
+  const prompt = `请你充当一名新闻稿件编辑专家，按照格式，根据用户输入的文章，提取文章关键信息，生成生动且吸引人的文章标题。
   注意：四个标题字数范围都是十二到十六字! 
   例：食品检出核酸阳性具有传染性吗？专家这样说!
   输入:"""文章内容"""
-  输出:xxx：xxx？/xxx？xxx！/xxx，xxx！/xxx，xxx
+  输出:xxx：xxx？/xxx？xxx！/xxx，xxx/xxx，xxx
   输入:"""${content}"""
   输出:`;
   return prompt;
 };
 
+// const wordReplacementPrompt = (content: string) => {
+//   const prompt = `请按格式修改部分词语短句，润色输入的文章，不需要输出修改后的文章
+//   输入: """文章内容"""
+//   输出: [{"before": "aa", "after": "bb"}]
+//   输入:"""${content}"""
+//   输出:...`;
+//   return prompt;
+// };
+
 const wordReplacementPrompt = (content: string) => {
-  const prompt = `请按格式修改部分词语短句，润色输入的文章，不需要输出修改后的文章
+  const prompt = `请你充当一名新闻稿件编辑专家，按照格式去修改用户输入新闻稿件的部分词句，使其更加流畅，优美。注意，不需要输出修改后的文章。
   输入: """文章内容"""
-  输出: [{"before": "aa", "after": "bb"}]
+  输出: JSON格式的数组，输出四到六个修改内容，例: [{"before": "aa", "after": "bb"}]
   输入:"""${content}"""
   输出:...`;
   return prompt;
