@@ -60,7 +60,9 @@ export const askAIQuestion = async (
       case 'title':
         return { result: completion.data.choices[0].text.split('/') };
       case 'word':
-        return { result: JSON.parse(completion.data.choices[0].text) };
+        return {
+          result: JSON.parse(filterJSON(completion.data.choices[0].text)),
+        };
       case 'classify':
         return { result: completion.data.choices[0].text.split('、') };
       default:
@@ -103,4 +105,35 @@ const tagClassifyPrompt = (content: string) => {
    """
   根据该文章的内容帮我生成几个文章标签,字数要求3到5个字，以顿号分隔：`;
   return prompt;
+};
+
+const filterJSON = (data: string) => {
+  // 找到最后一个 '}]' 出现的位置
+  const lastIndex = data.lastIndexOf('}');
+
+  if (lastIndex !== -1) {
+    // 截取有效的 JSON 字符串部分
+    const validData = `${data.substring(0, lastIndex + 1)}]`;
+
+    // 解析有效的 JSON 数据
+    const parsedData = JSON.parse(validData);
+
+    // 创建一个空数组，用于存储符合条件的数据
+    const filteredData = [];
+
+    // 过滤不完整的数据
+    for (let i = 0; i < parsedData.length; i++) {
+      const item = parsedData[i];
+      if (item.before && item.after) {
+        filteredData.push(item);
+      }
+    }
+
+    // 将过滤后的数据转换为 JSON 字符串
+    const filteredJSON = JSON.stringify(filteredData);
+
+    return filteredJSON;
+  } else {
+    return '';
+  }
 };
