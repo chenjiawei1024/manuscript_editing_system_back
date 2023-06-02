@@ -75,8 +75,64 @@ export const askAIQuestion = async (
   }
 };
 
+export const askAICreateImg = async (content: string) => {
+  // 创建openaiAPI
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+  if (!configuration.apiKey) {
+    return {
+      message:
+        'OpenAI API key not configured, please follow instructions in README.md',
+    };
+  }
+  try {
+    const prompt = imgCreationPrompt(content);
+    console.log(prompt);
+    const temperature = 0.7;
+    const max_tokens = 256;
+    const top_p = 1;
+    const frequency_penalty = 1;
+    const presence_penalty = 0;
+    const completion = await openai.createCompletion(
+      {
+        model: 'text-davinci-003',
+        prompt,
+        temperature,
+        max_tokens,
+        top_p,
+        frequency_penalty,
+        presence_penalty,
+      },
+      {
+        httpsAgent: tunnel.httpsOverHttp({
+          proxy: {
+            host: '127.0.0.1',
+            port: 58591,
+          },
+        }),
+      },
+    );
+    const img_tag = completion.data.choices[0].text;
+    console.log(img_tag);
+    return img_tag;
+  } catch (error) {
+    // Consider adjusting the error handling logic for your use case
+    console.log(error);
+    return { message: 'An error occurred during your request.' };
+  }
+};
+
+// const generatePrompt = (question: string) => {
+//   return question;
+// };
 const generatePrompt = (question: string) => {
-  return question;
+  const prompt = `请你充当一名新闻稿件编辑专家，回答下面用户输入的关于写稿知识相关的问题，字数不超过200字
+  注意： 如果用户提问的内容与写稿知识无关，则直接返回"对不起，我只能回答写稿相关的问题"
+  问题："""${question}"""
+  回答：`;
+  return prompt;
 };
 
 const createTitlePrompt = (content: string) => {
@@ -101,8 +157,9 @@ const createTitlePrompt = (content: string) => {
 
 const wordReplacementPrompt = (content: string) => {
   const prompt = `请你充当一名新闻稿件编辑专家，按照格式去修改用户输入新闻稿件的部分词句，使其更加流畅，优美。注意，不需要输出修改后的文章。
+  例: [{"before": "说是", "after": "声称"},{"before": "我们奇怪他们", "after": "我们怀疑他们"},{"before": "不害怕", "after": "临危不乱"}]
   输入: """文章内容"""
-  输出: JSON格式的数组，输出四到六个修改内容，例: [{"before": "aa", "after": "bb"}]
+  输出: [{"before": "aa", "after": "bb"},...]
   输入:"""${content}"""
   输出:...`;
   return prompt;
@@ -113,6 +170,19 @@ const tagClassifyPrompt = (content: string) => {
   ${content}
    """
   根据该文章的内容帮我生成几个文章标签,字数要求3到5个字，以顿号分隔：`;
+  return prompt;
+};
+
+const imgCreationPrompt = (content: string) => {
+  const prompt = `Please translate the following articles into English, and generate a representative article label based on the translated article content
+Example:environmental pollution, nature, economy
+Note:no more than two words
+Input:"""content"""
+Output:tag name
+Input:"""
+${content}
+"""
+Output:`;
   return prompt;
 };
 

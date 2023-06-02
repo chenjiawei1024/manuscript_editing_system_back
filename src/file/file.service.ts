@@ -38,11 +38,12 @@ export class FileService {
       .createQueryBuilder('file')
       .leftJoinAndSelect('file.tags', 'tag');
 
-    console.log(parentId);
     if (parentId) {
-      queryBuilder.andWhere('file.parent.folder_id = :parentId', {
-        parentId,
-      });
+      queryBuilder
+        .andWhere('file.parent.folder_id = :parentId', {
+          parentId,
+        })
+        .andWhere('file.owner.user_id = :owner', { owner });
     } else {
       queryBuilder
         .andWhere('file.parent.folder_id = -1')

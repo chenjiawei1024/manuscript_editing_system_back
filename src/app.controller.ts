@@ -29,4 +29,10 @@ export class AppController {
   createTagClassify(@Body() resq: { question: string }) {
     return askAIQuestion(resq.question, 'classify');
   }
+
+  @Post('creation/img')
+  createImg(@Body() resq: { question: string }) {
+    console.log('img被触发');
+    return this.appService.fetchPhotos(resq.question);
+  }
 }

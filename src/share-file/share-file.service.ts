@@ -35,7 +35,6 @@ export class ShareFileService {
 
     let file = await this.fileRepository.findOne({
       where: {
-        owner: sharer,
         file_name: file_name,
       },
     });
